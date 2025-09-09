@@ -1,0 +1,11 @@
+# Force GitHub to detect PHP files correctly
+*.php linguist-language=PHP
+api/*.php linguist-language=PHP
+config/*.php linguist-language=PHP
+inc-pages/*.php linguist-language=PHP
+
+# Ensure proper language detection
+*.js linguist-language=JavaScript
+*.css linguist-language=CSS
+*.scss linguist-language=SCSS
+*.html linguist-language=HTML

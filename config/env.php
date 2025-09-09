@@ -5,11 +5,14 @@
  */
 
 function loadEnv($path) {
-    if (!file_exists($path)) {
-        throw new Exception(".env file not found at: $path");
+    if (!file_exists($path) || is_dir($path)) {
+        return false; // Don't throw exception, just return false
     }
     
     $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if ($lines === false) {
+        return false;
+    }
     
     foreach ($lines as $line) {
         // Skip comments
@@ -31,16 +34,21 @@ function loadEnv($path) {
             putenv("$key=$value");
         }
     }
+    return true;
 }
 
 // Load .env file
-try {
-    loadEnv(__DIR__ . '/../.env');
-} catch (Exception $e) {
-    error_log("Environment loading error: " . $e->getMessage());
-    // Set default values if .env not found
+$envLoaded = loadEnv(__DIR__ . '/../.env');
+if (!$envLoaded) {
+    // Set default values if .env not found or failed to load
     $_ENV['ADMIN_PASSWORD'] = 'crl2024!@#';
     $_ENV['MANAGER_PASSWORD'] = 'mgr2024!@#';
+    $_ENV['SESSION_TIMEOUT'] = '1800';
+    $_ENV['API_TIMEOUT'] = '30';
+    $_ENV['API_CONNECT_TIMEOUT'] = '10';
+    $_ENV['RATE_LIMIT_REQUESTS'] = '10';
+    $_ENV['RATE_LIMIT_WINDOW'] = '60';
+    $_ENV['MAX_DATE_RANGE_DAYS'] = '365';
 }
 
 /**

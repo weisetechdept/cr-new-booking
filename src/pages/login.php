@@ -2,7 +2,8 @@
 session_start();
 
 // Load environment variables
-require_once __DIR__ . '/config/env.php';
+require_once __DIR__ . '/../../config/env.php';
+require_once __DIR__ . '/../../config/auth.php';
 
 // Security headers
 header('X-Content-Type-Options: nosniff');
@@ -12,23 +13,20 @@ header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
 
 // Redirect if already logged in
 if (isset($_SESSION['authenticated']) && $_SESSION['authenticated'] === true) {
-    header("Location: detail.php?p=crl1");
+    header("Location: /dashboard");
     exit;
 }
 
 $error_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_STRING);
+    $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     $password = $_POST['password'] ?? '';
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
     
-    // Simple authentication using environment variables
-    $valid_users = [
-        'admin' => password_hash(env('ADMIN_PASSWORD'), PASSWORD_DEFAULT),
-        'manager' => password_hash(env('MANAGER_PASSWORD'), PASSWORD_DEFAULT)
-    ];
-    
-    if (isset($valid_users[$username]) && password_verify($password, $valid_users[$username])) {
+    // Validate credentials using new auth system
+    if (validateUser($username, $password)) {
         session_regenerate_id(true);
         $_SESSION['authenticated'] = true;
         $_SESSION['username'] = $username;
@@ -36,15 +34,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['login_time'] = time();
         
         // Log successful login
-        error_log("Login successful: {$username} from {$_SERVER['REMOTE_ADDR']}", 3, 'security.log');
+        logAuthAttempt($username, $ip, true, $userAgent);
         
-        header("Location: detail.php?p=crl1");
+        header("Location: /dashboard");
         exit;
     } else {
         $error_message = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
         
         // Log failed login attempt
-        error_log("Login failed: {$username} from {$_SERVER['REMOTE_ADDR']}", 3, 'security.log');
+        logAuthAttempt($username ?: 'unknown', $ip, false, $userAgent);
         
         // Add delay to prevent brute force
         sleep(2);
@@ -60,12 +58,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     
     <!-- App favicon -->
-    <link rel="shortcut icon" href="assets/images/favicon.ico">
+    <link rel="shortcut icon" href="../../assets/images/favicon.ico">
     
     <!-- App css -->
-    <link href="assets/css/bootstrap.min.css" rel="stylesheet" type="text/css">
-    <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css">
-    <link href="assets/css/theme.min.css" rel="stylesheet" type="text/css">
+    <link href="../../assets/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../../assets/css/icons.min.css" rel="stylesheet" type="text/css">
+    <link href="../../assets/css/theme.min.css" rel="stylesheet" type="text/css">
     
     <style>
         body {
@@ -140,8 +138,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <!-- jQuery -->
-    <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/js/jquery.min.js"></script>
+    <script src="../../assets/js/bootstrap.bundle.min.js"></script>
     
     <script>
         // Clear form on page load to prevent auto-fill issues

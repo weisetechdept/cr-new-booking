@@ -1,0 +1,72 @@
+FROM php:8.1-apache AS base
+
+# Install system dependencies and PHP extensions
+RUN apt-get update && apt-get install -y \
+    libcurl4-openssl-dev \
+    libzip-dev \
+    unzip \
+    curl \
+    ca-certificates \
+    && docker-php-ext-install \
+    zip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && update-ca-certificates
+
+# Enable Apache modules
+RUN a2enmod rewrite headers ssl
+
+# Configure Apache security
+RUN echo "ServerTokens Prod" >> /etc/apache2/apache2.conf \
+    && echo "ServerSignature Off" >> /etc/apache2/apache2.conf
+
+# Production PHP configuration
+RUN { \
+    echo 'expose_php = Off'; \
+    echo 'display_errors = Off'; \
+    echo 'display_startup_errors = Off'; \
+    echo 'log_errors = On'; \
+    echo 'error_log = /var/log/apache2/php_errors.log'; \
+    echo 'max_execution_time = 30'; \
+    echo 'max_input_time = 30'; \
+    echo 'memory_limit = 256M'; \
+    echo 'post_max_size = 20M'; \
+    echo 'upload_max_filesize = 20M'; \
+    echo 'session.cookie_httponly = 1'; \
+    echo 'session.cookie_secure = 1'; \
+    echo 'session.use_strict_mode = 1'; \
+    } > /usr/local/etc/php/conf.d/production.ini
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy application files
+COPY --chown=www-data:www-data . .
+
+# Create logs directory with proper permissions
+RUN mkdir -p logs \
+    && chown -R www-data:www-data logs \
+    && chmod -R 755 logs
+
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html \
+    && chmod -R 644 /var/www/html/*.php \
+    && chmod -R 644 /var/www/html/**/*.php \
+    && chmod 755 /var/www/html
+
+# Apache configuration
+COPY --chown=root:root docker/apache-config.conf /etc/apache2/sites-available/000-default.conf
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost/ || exit 1
+
+# Run as non-root user
+USER www-data
+
+# Expose port 80
+EXPOSE 80
+
+# Start Apache
+CMD ["apache2-foreground"]

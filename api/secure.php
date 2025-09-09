@@ -1,8 +1,14 @@
 <?php
+// Disable error output for clean JSON response
+error_reporting(0);
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
+
 session_start();
 
 // Load environment variables
 require_once __DIR__ . '/../config/env.php';
+require_once __DIR__ . '/../config/auth.php';
 
 // Security headers
 header('Content-Type: application/json; charset=utf-8');
@@ -72,8 +78,8 @@ function validateDate($date) {
     return checkdate($parts[1], $parts[2], $parts[0]);
 }
 
-$fmdate = filter_input(INPUT_GET, 'fmdate', FILTER_SANITIZE_STRING);
-$todate = filter_input(INPUT_GET, 'todate', FILTER_SANITIZE_STRING);
+$fmdate = filter_input(INPUT_GET, 'fmdate', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+$todate = filter_input(INPUT_GET, 'todate', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
 if (!validateDate($fmdate) || !validateDate($todate)) {
     http_response_code(400);
@@ -98,16 +104,10 @@ if (($todate_timestamp - $fmdate_timestamp) > $max_range) {
     exit;
 }
 
-// Log API access
-$log_entry = [
-    'timestamp' => date('Y-m-d H:i:s'),
-    'user' => $_SESSION['username'],
-    'ip' => $ip,
-    'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
-    'from_date' => $fmdate,
-    'to_date' => $todate
-];
-error_log(json_encode($log_entry), 3, '../logs/api_access.log');
+// Log API access using new logging system
+$username = $_SESSION['username'] ?? 'unknown';
+$dateRange = "{$fmdate} to {$todate}";
+logDataAccess($username, $ip, 'secure.php', $dateRange, 0); // Record count will be updated later
 
 try {
     // Secure API call - endpoint from environment only
@@ -192,6 +192,10 @@ try {
             htmlspecialchars($value->jobstatus ?? '', ENT_QUOTES, 'UTF-8')
         ];
     }
+    
+    // Log final record count
+    $recordCount = count($api_data);
+    logDataAccess($username, $ip, 'secure.php', $dateRange, $recordCount);
     
     echo json_encode(['data' => $api_data]);
     

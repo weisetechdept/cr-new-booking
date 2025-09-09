@@ -1,4 +1,9 @@
 <?php
+// Disable error output for clean JSON response
+error_reporting(0);
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
+
 session_start();
 
 // Load environment variables
@@ -41,8 +46,8 @@ function validateDate($date) {
     return checkdate($parts[1], $parts[2], $parts[0]);
 }
 
-$fmdate = filter_input(INPUT_GET, 'fmdate', FILTER_SANITIZE_STRING);
-$todate = filter_input(INPUT_GET, 'todate', FILTER_SANITIZE_STRING);
+$fmdate = filter_input(INPUT_GET, 'fmdate', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+$todate = filter_input(INPUT_GET, 'todate', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
 if (!validateDate($fmdate) || !validateDate($todate)) {
     http_response_code(400);

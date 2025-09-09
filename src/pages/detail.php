@@ -6,24 +6,33 @@ header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('X-XSS-Protection: 1; mode=block');
 header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://code.highcharts.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self';");
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://code.highcharts.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self';");
 
 // Authentication check
 if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
-    header("Location: login.php");
+    header("Location: /login");
     exit;
 }
 
 // Session timeout check (30 minutes)
 if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time']) > 1800) {
+    // Load auth functions for logout logging
+    require_once __DIR__ . '/../../config/env.php';
+    require_once __DIR__ . '/../../config/auth.php';
+    
+    // Log timeout logout
+    if (isset($_SESSION['username'])) {
+        logLogout($_SESSION['username'], $_SERVER['REMOTE_ADDR'] ?? 'unknown', 'timeout');
+    }
+    
     session_destroy();
-    header("Location: login.php?expired=1");
+    header("Location: /login?expired=1");
     exit;
 }
 
 // Validate parameter
 if (!isset($_GET['p']) || $_GET['p'] !== 'crl1') {
-    header("Location: login.php");
+    header("Location: /login");
     exit;
 }
 
@@ -44,20 +53,20 @@ if (!isset($_SESSION['csrf_token'])) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- App favicon -->
-    <link rel="shortcut icon" href="/assets/images/favicon.ico">
+    <link rel="shortcut icon" href="/../../assets/images/favicon.ico">
 
     <!-- Plugins css -->
-    <link href="/assets/plugins/datatables/dataTables.bootstrap4.css" rel="stylesheet" type="text/css" />
-    <link href="/assets/plugins/datatables/responsive.bootstrap4.css" rel="stylesheet" type="text/css" />
-    <link href="/assets/plugins/datatables/buttons.bootstrap4.css" rel="stylesheet" type="text/css" />
-    <link href="/assets/plugins/datatables/select.bootstrap4.css" rel="stylesheet" type="text/css" />
+    <link href="/../../assets/plugins/datatables/dataTables.bootstrap4.css" rel="stylesheet" type="text/css" />
+    <link href="/../../assets/plugins/datatables/responsive.bootstrap4.css" rel="stylesheet" type="text/css" />
+    <link href="/../../assets/plugins/datatables/buttons.bootstrap4.css" rel="stylesheet" type="text/css" />
+    <link href="/../../assets/plugins/datatables/select.bootstrap4.css" rel="stylesheet" type="text/css" />
 
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@100;200;300;400;500;600;700;800&family=Kanit:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- App css -->
-    <link href="/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-    <link href="/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
-    <link href="/assets/css/theme.min.css" rel="stylesheet" type="text/css" />
+    <link href="/../../assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/../../assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link href="/../../assets/css/theme.min.css" rel="stylesheet" type="text/css" />
     <style>
         body {
             font-family: 'Chakra Petch', sans-serif;
@@ -87,8 +96,8 @@ if (!isset($_SESSION['csrf_token'])) {
 <body>
     <div id="layout-wrapper">
         <?php 
-                include_once('inc-pages/nav.php');
-                include_once('inc-pages/sidebar.php');
+                include_once('../includes/nav.php');
+                include_once('../includes/sidebar.php');
         ?>
         <div class="main-content">
 
@@ -232,36 +241,35 @@ if (!isset($_SESSION['csrf_token'])) {
     <div class="menu-overlay"></div>
 
     <!-- jQuery  -->
-    <script src="/assets/js/jquery.min.js"></script>
-    <script src="/assets/js/bootstrap.bundle.min.js"></script>
-    <script src="/assets/js/metismenu.min.js"></script>
-    <script src="/assets/js/waves.js"></script>
-    <script src="/assets/js/simplebar.min.js"></script>
+    <script src="/../../assets/js/jquery.min.js"></script>
+    <script src="/../../assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/../../assets/js/metismenu.min.js"></script>
+    <script src="/../../assets/js/waves.js"></script>
+    <script src="/../../assets/js/simplebar.min.js"></script>
 
     <!-- third party js -->
-    <script src="/assets/plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="/assets/plugins/datatables/dataTables.bootstrap4.js"></script>
-    <script src="/assets/plugins/datatables/dataTables.responsive.min.js"></script>
-    <script src="/assets/plugins/datatables/responsive.bootstrap4.min.js"></script>
-    <script src="/assets/plugins/datatables/dataTables.buttons.min.js"></script>
-    <script src="/assets/plugins/datatables/buttons.bootstrap4.min.js"></script>
-    <script src="/assets/plugins/datatables/buttons.html5.min.js"></script>
-    <script src="/assets/plugins/datatables/buttons.flash.min.js"></script>
-    <script src="/assets/plugins/datatables/buttons.print.min.js"></script>
-    <script src="/assets/plugins/datatables/dataTables.keyTable.min.js"></script>
-    <script src="/assets/plugins/datatables/dataTables.select.min.js"></script>
-    <script src="/assets/plugins/datatables/pdfmake.min.js"></script>
-    <script src="/assets/plugins/datatables/vfs_fonts.js"></script>
+    <script src="/../../assets/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="/../../assets/plugins/datatables/dataTables.bootstrap4.js"></script>
+    <script src="/../../assets/plugins/datatables/dataTables.responsive.min.js"></script>
+    <script src="/../../assets/plugins/datatables/responsive.bootstrap4.min.js"></script>
+    <script src="/../../assets/plugins/datatables/dataTables.buttons.min.js"></script>
+    <script src="/../../assets/plugins/datatables/buttons.bootstrap4.min.js"></script>
+    <script src="/../../assets/plugins/datatables/buttons.html5.min.js"></script>
+    <script src="/../../assets/plugins/datatables/buttons.flash.min.js"></script>
+    <script src="/../../assets/plugins/datatables/buttons.print.min.js"></script>
+    <script src="/../../assets/plugins/datatables/dataTables.keyTable.min.js"></script>
+    <script src="/../../assets/plugins/datatables/dataTables.select.min.js"></script>
+    <script src="/../../assets/plugins/datatables/pdfmake.min.js"></script>
+    <script src="/../../assets/plugins/datatables/vfs_fonts.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.1/axios.min.js"></script>
 	<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 
     <script src="https://code.highcharts.com/maps/highmaps.js"></script>
     <script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
-    <script src="/assets/js/th-th-all.js"></script>
+    <script src="/../../assets/js/th-th-all.js"></script>
 
     <script>
-
         $('#datatable').DataTable({
             dom: 'Bfrtip',
             buttons: [
@@ -332,8 +340,8 @@ if (!isset($_SESSION['csrf_token'])) {
     </script>
 
     <!-- App js -->
-    <script src="/assets/js/theme.js"></script>
+    <script src="/../../assets/js/theme.js"></script>
 
 </body>
 
-</html>
+</html> 

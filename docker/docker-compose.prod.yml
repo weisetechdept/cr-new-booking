@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  web:
+    build: 
+      context: ..
+      dockerfile: docker/Dockerfile.prod
+    container_name: crl-booking-web-prod
+    restart: always
+    environment:
+      - TZ=Asia/Bangkok
+      - PHP_INI_SCAN_DIR=/usr/local/etc/php/conf.d:/usr/local/etc/php/conf.d-custom
+    volumes:
+      - ../logs:/var/www/html/logs
+      - ../.env:/var/www/html/.env:ro
+    networks:
+      - crl-network-prod
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  nginx:
+    image: nginx:alpine
+    container_name: crl-booking-nginx-prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../docker/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ../ssl:/etc/ssl/certs:ro
+      - ../logs/nginx:/var/log/nginx
+    depends_on:
+      web:
+        condition: service_healthy
+    networks:
+      - crl-network-prod
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Log rotation service
+  logrotate:
+    image: blacklabelops/logrotate
+    container_name: crl-booking-logrotate-prod
+    restart: always
+    volumes:
+      - ../logs:/var/log/docker
+    environment:
+      - LOGROTATE_PARAMETERS=--verbose
+      - LOG_FILE=/var/log/docker/*.log
+      - LOG_FILE_ENDINGS=log
+      - LOGROTATE_SIZE=50M
+      - LOGROTATE_COPIES=10
+      - LOGROTATE_COMPRESSION=compress
+      - LOGROTATE_INTERVAL=daily
+    networks:
+      - crl-network-prod
+
+  # Health monitoring (optional)
+  watchtower:
+    image: containrrr/watchtower
+    container_name: crl-booking-watchtower-prod
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=3600
+      - WATCHTOWER_INCLUDE_STOPPED=true
+    profiles:
+      - monitoring
+
+networks:
+  crl-network-prod:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  logs:
+    driver: local

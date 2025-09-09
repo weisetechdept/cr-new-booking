@@ -25,7 +25,7 @@
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Content-Security-Policy "default-src 'none'; connect-src 'self';"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; connect-src 'self';"
 </IfModule>
 
 # Disable directory listing

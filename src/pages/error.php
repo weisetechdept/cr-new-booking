@@ -36,7 +36,7 @@ http_response_code($error_code);
     <meta charset="utf-8">
     <title>Error <?= $error_code ?> - Alpha X</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link href="assets/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../../assets/css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -91,7 +91,7 @@ http_response_code($error_code);
         <div class="error-message">
             ขออภัย เกิดข้อผิดพลาดในการเข้าถึงหน้าที่คุณต้องการ
         </div>
-        <a href="login.php" class="btn-home">กลับสู่หน้าหลัก</a>
+        <a href="/login" class="btn-home">กลับสู่หน้าหลัก</a>
     </div>
 </body>
 </html>

@@ -1,0 +1,63 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Environment files (keep .env.example)
+.env
+.env.*
+
+# Documentation files
+README*.md
+DEPLOYMENT.md
+USER-MANAGEMENT.md
+docs/
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs (will be mounted as volume)
+logs/*.log
+logs/*.txt
+logs/rate_limit_*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Cache files
+*.cache
+
+# Debug and test files
+debug-*.php
+test-*.php
+*.backup
+*.bak
+*.old
+
+# Node modules (if any)
+node_modules/
+
+# SSL certificates
+ssl/
+*.pem
+*.crt
+*.key

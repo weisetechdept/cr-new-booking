@@ -24,7 +24,7 @@
                     <i class="mdi mdi-chevron-down d-none d-sm-inline-block"></i>
                 </button>
                 <div class="dropdown-menu dropdown-menu-right">
-                    <a href="logout.php" class="dropdown-item d-flex align-items-center justify-content-between">
+                    <a href="/logout" class="dropdown-item d-flex align-items-center justify-content-between">
                         <span>ออกจากระบบ</span>
                     </a>
                 </div>

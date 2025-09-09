@@ -1,0 +1,64 @@
+# Environment files
+.env
+.env.local
+.env.production
+
+# Log files
+logs/*.log
+logs/*.txt
+logs/rate_limit_*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Cache files
+*.cache
+
+# Debug files
+debug-*.php
+test-*.php
+
+# Docker files (optional - uncomment if not needed in repo)
+# docker-compose.override.yml
+
+# User uploads (if any)
+uploads/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Node modules (if using npm)
+node_modules/
+
+# Composer (if using)
+vendor/
+composer.lock
+
+# SSL certificates
+*.pem
+*.crt
+*.key
+ssl/
+
+.htaccess.disabled

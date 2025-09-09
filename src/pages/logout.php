@@ -1,16 +1,15 @@
 <?php
 session_start();
 
-// Log logout event
+// Load environment variables
+require_once __DIR__ . '/../../config/env.php';
+require_once __DIR__ . '/../../config/auth.php';
+
+// Log logout event using new logging system
 if (isset($_SESSION['username'])) {
-    $log_entry = [
-        'timestamp' => date('Y-m-d H:i:s'),
-        'event' => 'user_logout',
-        'user' => $_SESSION['username'],
-        'ip' => $_SERVER['REMOTE_ADDR'],
-        'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? ''
-    ];
-    error_log(json_encode($log_entry), 3, 'security.log');
+    $username = $_SESSION['username'];
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    logLogout($username, $ip, 'manual');
 }
 
 // Clear all session data
@@ -35,6 +34,6 @@ header('Pragma: no-cache');
 header('Expires: 0');
 
 // Redirect to login
-header("Location: login.php?logout=1");
+header("Location: /login?logout=1");
 exit;
 ?>

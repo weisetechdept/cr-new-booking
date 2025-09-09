@@ -1,0 +1,29 @@
+RewriteEngine On
+
+# Prevent access to sensitive files
+<Files ~ "\.(env|log|md|txt)$">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Simple URL rewrites - only for external access
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Clean URLs - internal rewrite only
+RewriteRule ^login$ src/pages/login.php [L]
+RewriteRule ^logout$ src/pages/logout.php [L] 
+RewriteRule ^dashboard$ src/pages/detail.php?p=crl1 [L,QSA]
+RewriteRule ^logs/?$ src/pages/logs.php?p=logs [L,QSA]
+RewriteRule ^password-generator$ src/pages/password-generator.php [L]
+
+# API routes - only rewrite if no extension
+RewriteRule ^api/([^/.]+)$ api/$1.php [L,QSA]
+
+# Default - redirect to login (internal redirect, not HTTP redirect)
+RewriteRule ^$ src/pages/login.php [L]
+
+# Custom error pages
+ErrorDocument 404 /src/pages/error.php?code=404
+ErrorDocument 403 /src/pages/error.php?code=403  
+ErrorDocument 500 /src/pages/error.php?code=500
