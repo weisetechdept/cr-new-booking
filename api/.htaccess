@@ -1,0 +1,47 @@
+# API Directory Security Configuration
+
+# Deny access to sensitive files
+<Files "*.log">
+    Deny from all
+</Files>
+
+<Files "*.env">
+    Deny from all
+</Files>
+
+<Files "*.ini">
+    Deny from all
+</Files>
+
+# Force HTTPS (uncomment if using SSL)
+# RewriteEngine On
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Security headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options DENY
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Content-Security-Policy "default-src 'none'; connect-src 'self';"
+</IfModule>
+
+# Disable directory listing
+Options -Indexes
+
+# Prevent access to backup and temporary files
+<FilesMatch "\.(bak|backup|log|tmp|temp|swp|swo)$">
+    Deny from all
+</FilesMatch>
+
+# Rate limiting (if mod_evasive is available)
+<IfModule mod_evasive24.c>
+    DOSHashTableSize    2048
+    DOSPageCount        10
+    DOSSiteCount        50
+    DOSPageInterval     1
+    DOSSiteInterval     1
+    DOSBlockingPeriod   600
+</IfModule>
