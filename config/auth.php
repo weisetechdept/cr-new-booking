@@ -147,7 +147,10 @@ function logAuthAttempt($username, $ip, $success, $userAgent = '') {
     ];
     
     $logMessage = json_encode($logEntry, JSON_UNESCAPED_UNICODE) . "\n";
-    error_log($logMessage, 3, env('LOG_PATH', '/var/www/html/logs') . '/auth.log');
+    $logPath = env('LOG_PATH', '/var/www/html/logs') . '/auth.log';
+    
+    // ใช้ @ เพื่อซ่อน error และหลีกเลี่ยง headers already sent
+    @file_put_contents($logPath, $logMessage, FILE_APPEND | LOCK_EX);
 }
 
 /**
@@ -174,7 +177,10 @@ function logLogout($username, $ip, $reason = 'manual') {
     ];
     
     $logMessage = json_encode($logEntry, JSON_UNESCAPED_UNICODE) . "\n";
-    error_log($logMessage, 3, env('LOG_PATH', '/var/www/html/logs') . '/auth.log');
+    $logPath = env('LOG_PATH', '/var/www/html/logs') . '/auth.log';
+    
+    // ใช้ @ เพื่อซ่อน error และหลีกเลี่ยง headers already sent
+    @file_put_contents($logPath, $logMessage, FILE_APPEND | LOCK_EX);
 }
 
 /**
@@ -206,6 +212,9 @@ function logDataAccess($username, $ip, $endpoint, $dateRange = '', $recordCount 
     ];
     
     $logMessage = json_encode($logEntry, JSON_UNESCAPED_UNICODE) . "\n";
-    error_log($logMessage, 3, env('LOG_PATH', '/var/www/html/logs') . '/data_access.log');
+    $logPath = env('LOG_PATH', '/var/www/html/logs') . '/data_access.log';
+    
+    // ใช้ @ เพื่อซ่อน error และหลีกเลี่ยง headers already sent
+    @file_put_contents($logPath, $logMessage, FILE_APPEND | LOCK_EX);
 }
 ?>
